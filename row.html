@@ -1301,7 +1301,8 @@ function submitPace(skip=false) {
     state = {
       screen:'home', week:1, halfMode:false, sessions:{},
       selWeek:null, selDay:null, activeSess:null,
-      timerRunning:false, paceError:null, resetConfirm:false
+      timerRunning:false, paceError:null, resetConfirm:false,
+      draftPace:'', confirmAbandon:false, confirmDone:false
     };
     _phase='idle'; _rep=1;
     _startMs=null; _baseMs=0;
@@ -1312,7 +1313,74 @@ function submitPace(skip=false) {
     render();
   }
 
+/* ── OPTIONAL CHOICE ──────────────────────────────────────── */
+  /* Shown when user taps an optional day tile. Offers outdoor cycling
+     (the week's CYCLE_PLAN session) or an indoor rowing backup. */
+  function screenOptionalChoice() {
+    const meta     = DAY_META[state.selDay];
+    const isTue    = state.selDay === 3; // index 3 = Optional Day 1 = Tuesday
+    const cyc      = CYCLE_PLAN[state.selWeek - 1];
+    const cycleDay = isTue ? cyc.tue : cyc.thu;
 
+    return `
+      <button class="back-btn" onclick="goTo('home')">← Back</button>
+      <p class="slabel">${meta.label.toUpperCase()} — WEEK ${state.selWeek}</p>
+      <h2 class="hd" style="font-size:44px;color:var(--text);margin-bottom:24px;">CHOOSE ACTIVITY</h2>
+
+      <button class="btn btn--orange" style="text-align:left;height:auto;padding:20px;margin-bottom:12px;"
+        onclick="chooseOptional('cycle')">
+        <div style="font-size:22px;margin-bottom:6px;">🚴 Outdoor Cycling</div>
+        <div style="font-size:13px;font-weight:400;opacity:0.85;">${cycleDay.duration} · ${cycleDay.effort}</div>
+      </button>
+
+      <button class="btn btn--surface" style="text-align:left;height:auto;padding:20px;"
+        onclick="chooseOptional('row')">
+        <div style="font-size:20px;margin-bottom:6px;">🚣 Indoor Rowing <span style="font-size:13px;opacity:0.7;">(weather backup)</span></div>
+        <div style="font-size:13px;font-weight:400;opacity:0.7;">20min easy · recovery pace · no data entry</div>
+      </button>`;
+  }
+
+  /* ── CYCLE INFO ───────────────────────────────────────────── */
+  /* Shows the week's cycling session with a Mark Done button. No timer. */
+  function screenCycleInfo() {
+    const meta     = DAY_META[state.selDay];
+    const isTue    = state.selDay === 3;
+    const cyc      = CYCLE_PLAN[state.selWeek - 1];
+    const cycleDay = isTue ? cyc.tue : cyc.thu;
+    const key      = `w${state.selWeek}-d${state.selDay}`;
+    const done     = !!state.sessions[key]?.completed;
+
+    return `
+      <button class="back-btn" onclick="goTo('optional-choice')">← Back</button>
+      <p class="slabel">${meta.label.toUpperCase()} — WEEK ${state.selWeek}</p>
+      <h2 class="hd" style="font-size:44px;color:var(--text);margin-bottom:8px;">OUTDOOR CYCLING</h2>
+      ${pill('CROSS-TRAINING', 'blue')}
+
+      <div class="card card--blue" style="margin-top:20px;">
+        <p class="slabel" style="margin-bottom:8px;">${cycleDay.effort.toUpperCase()}</p>
+        <div class="hd" style="font-size:52px;color:var(--blue);line-height:1;">${cycleDay.duration}</div>
+      </div>
+
+      <div class="card">
+        <p class="slabel" style="margin-bottom:8px;">SESSION DETAIL</p>
+        <p style="color:var(--muted);font-size:14px;line-height:1.65;">${cycleDay.detail}</p>
+      </div>
+
+      <div class="card card--dim">
+        <p style="color:var(--dimmer);font-size:13px;line-height:1.55;">
+          Zone 2 = conversational pace (RPE 3–4). Tempo = comfortably hard, short phrases OK (RPE 5–6).
+          This app doesn't track cycling — tap Mark Done when you're back.
+        </p>
+      </div>
+
+      ${done
+        ? `<button class="btn btn--dis" style="margin-top:8px;" disabled>Already completed ✓</button>`
+        : `<button class="btn btn--green" style="margin-top:8px;" onclick="markCycleDone()">Mark as Done ✓</button>`
+      }
+      <button class="btn btn--ghost" onclick="goTo('home')">Cancel</button>`;
+  }
+
+    
   /* ============================================================
      RENDER
      
@@ -1328,13 +1396,15 @@ function submitPace(skip=false) {
     const app = document.getElementById('app');
 
     const screens = {
-      'home':           screenHome,
-      'session-start':  screenSessionStart,
-      'session-active': screenSessionActive,
-      'pace-input':     screenPaceInput,
-      'session-done':   screenSessionDone,
-      'history':        screenHistory,
-      'settings':       screenSettings
+      'home':             screenHome,
+      'session-start':    screenSessionStart,
+      'session-active':   screenSessionActive,
+      'pace-input':       screenPaceInput,
+      'session-done':     screenSessionDone,
+      'history':          screenHistory,
+      'settings':         screenSettings,
+      'optional-choice':  screenOptionalChoice, // choose cycling or row backup
+      'cycle-info':       screenCycleInfo        // cycling session detail + mark done
     };
 
     const fn = screens[state.screen];
