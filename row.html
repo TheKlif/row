@@ -900,9 +900,10 @@
         <p style="color:var(--dim);font-size:14px;line-height:1.5;">Enter your average split now, before the Merach screen times out</p>
       </div>
       <p class="slabel" style="text-align:center;margin-bottom:8px;">AVERAGE SPLIT PER 500M</p>
-      <input class="pace-field${state.paceError?' err':''}" type="text" inputmode="decimal"
-        placeholder="2:05.0" id="paceField"
-        oninput="state.paceError=null;" onblur="render();" />
+      <input class="pace-field${state.paceError?' err':''}" type="text" inputmode="text"
+        placeholder="2:05.0" id="paceField" oninput="state.paceError=null;" 
+        onkeypress="if(event.key==='Enter'){submitPace()}" autocapitalize="off" 
+        autocomplete="off" spellcheck="false" onblur="render();" />
       <p class="pace-hint">M:SS or M:SS.t — read from Merach avg split display</p>
       ${errMsg}
       <button class="btn btn--orange" onclick="submitPace()">Save & Finish →</button>
