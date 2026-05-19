@@ -601,9 +601,8 @@
 
   /* Pace validation: must be M:SS or M:SS.t — e.g. "2:05" or "2:05.3" */
   function validPace(str) {
-    return /^\d:\d{2}(\.\d)?$/.test(str.trim());
+    return /^\d+:\d{1,2}(\.\d)?$/.test(str.trim());
   }
-
 
   /* ============================================================
      PLAN HELPERS
