@@ -1089,11 +1089,17 @@
 
   /* Toggle pause/resume */
   function pauseToggle() {
-    state.timerRunning ? timerPause() : timerStart();
+    console.log('pauseToggle');
+    if (state.timerRunning) {
+      timerPause();
+    } else {
+      timerStart();
+    }
   }
 
   /* Tap "Done" on a single distance or time session */
   function sessionDone() {
+    console.log('sessionDone');
     _phase = 'complete';
     timerPause();
     releaseWakeLock();
@@ -1103,6 +1109,7 @@
 
   /* Abandon mid-session and return home */
   function abandonSession() {
+    console.log('abandonSession');
     _phase = 'idle';
     timerPause();
     timerReset();
