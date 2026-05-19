@@ -356,13 +356,52 @@
     /*W24*/ { core:[D(12000), ID(5,1500,3), T(30)     ], optional:[IT(2,15,2), ID(4,1000,3)] },
   ];
 
-  /* Day slot metadata — index 0-4 maps to Day 1, 2, 3, Optional 4, Optional 5 */
+/* 24-week cycling cross-training plan for optional Tue/Thu days.
+     Session structure based on Road Cycling Academy beginner weekly template:
+     https://roadcyclingacademy.com/how-to-structure-a-cycling-training-week
+     Tuesday: Zone 2 with progressive tempo work. Thursday: Zone 2 base only
+     (sandwiched between Wed intervals row and Fri long row — kept easy throughout).
+     Deload weeks at W8, W12, W16, W20: ~30% volume reduction, no intensity.
+     RPE guide: Zone 2 = RPE 3-4 (fully conversational). Tempo = RPE 5-6
+     (comfortably hard; can say a few words but not full sentences). */
+  const CYCLE_PLAN = [
+    /*W01*/{ tue:{duration:'30min', effort:'Zone 2', detail:'Easy spin at conversational pace. RPE 3–4. Focus on smooth pedal stroke.'}, thu:{duration:'20min', effort:'Zone 2', detail:'Easy recovery flush. RPE 3. Stay fully conversational throughout.'} },
+    /*W02*/{ tue:{duration:'30min', effort:'Zone 2', detail:'Easy spin. Same effort as week 1. Consistent easy aerobic work.'}, thu:{duration:'20min', effort:'Zone 2', detail:'Easy recovery ride. No pushing.'} },
+    /*W03*/{ tue:{duration:'35min', effort:'Zone 2', detail:'Slightly longer easy spin. RPE 3–4. No surge efforts.'}, thu:{duration:'20min', effort:'Zone 2', detail:'Short recovery ride. Keep it easy heading into Friday.'} },
+    /*W04*/{ tue:{duration:'35min', effort:'Zone 2', detail:'End of foundation block. Easy ride — legs should feel good, let them spin freely.'}, thu:{duration:'20min', effort:'Zone 2', detail:'Easy spin. Full Zone 2 throughout.'} },
+    /*W05*/{ tue:{duration:'40min', effort:'Z2 + 2×5min tempo', detail:'10min easy warm-up, then 2×5min at RPE 5–6 (comfortably hard, short phrases only), 5min easy between, 10min easy cool-down.'}, thu:{duration:'25min', effort:'Zone 2', detail:'Easy Zone 2. Recovery ride following Wednesday intervals row.'} },
+    /*W06*/{ tue:{duration:'40min', effort:'Z2 + 2×5min tempo', detail:'Same structure as week 5. Try to feel more controlled at tempo effort than last week.'}, thu:{duration:'25min', effort:'Zone 2', detail:'Easy base ride. Conversational pace throughout.'} },
+    /*W07*/{ tue:{duration:'45min', effort:'Z2 + 2×8min tempo', detail:'10min easy warm-up, 2×8min at RPE 5–6 with 5min easy between, 9min easy cool-down.'}, thu:{duration:'25min', effort:'Zone 2', detail:'Easy ride. Recover from Wednesday intervals.'} },
+    /*W08*/{ tue:{duration:'30min', effort:'Zone 2 (deload)', detail:'Recovery week — drop all tempo work. Easy spin only at RPE 3–4. No pushing.'}, thu:{duration:'20min', effort:'Zone 2 (deload)', detail:'Easy flush. Full recovery week.'} },
+    /*W09*/{ tue:{duration:'50min', effort:'Z2 + 3×6min tempo', detail:'10min easy warm-up, 3×6min at RPE 6 (hard but sustainable), 4min easy between, 10min easy cool-down.'}, thu:{duration:'30min', effort:'Zone 2', detail:'Steady aerobic base ride. RPE 3–4.'} },
+    /*W10*/{ tue:{duration:'50min', effort:'Z2 + 3×6min tempo', detail:'Repeat week 9 Tuesday. Note whether RPE 6 feels more comfortable than before.'}, thu:{duration:'30min', effort:'Zone 2', detail:'Easy base ride. Full Zone 2.'} },
+    /*W11*/{ tue:{duration:'55min', effort:'Z2 + 2×10min tempo', detail:'10min easy warm-up, 2×10min at RPE 6, 5min easy between, 10min easy cool-down.'}, thu:{duration:'35min', effort:'Zone 2', detail:'Easy aerobic ride. Conversational pace throughout.'} },
+    /*W12*/{ tue:{duration:'35min', effort:'Zone 2 (deload)', detail:'Recovery week. Drop all tempo work. Easy spin only.'}, thu:{duration:'25min', effort:'Zone 2 (deload)', detail:'Short easy recovery ride.'} },
+    /*W13*/{ tue:{duration:'55min', effort:'Z2 + 3×8min tempo', detail:'10min easy warm-up, 3×8min at RPE 6, 4min easy between, 11min easy cool-down.'}, thu:{duration:'35min', effort:'Zone 2', detail:'Easy base ride following Wednesday intervals row.'} },
+    /*W14*/{ tue:{duration:'60min', effort:'Z2 + 3×8min tempo', detail:'Same structure as week 13. Aim to hold RPE 6 more comfortably through all three efforts.'}, thu:{duration:'40min', effort:'Zone 2', detail:'Easy aerobic ride. Steady conversational pace.'} },
+    /*W15*/{ tue:{duration:'60min', effort:'Z2 + 2×12min steady', detail:'10min easy warm-up, 2×12min at RPE 5–6 (steady effort, short phrases OK), 6min easy between, 8min easy cool-down.'}, thu:{duration:'40min', effort:'Zone 2', detail:'Easy Zone 2. Prepare legs for Friday long row.'} },
+    /*W16*/{ tue:{duration:'40min', effort:'Zone 2 (deload)', detail:'Recovery week. All easy, no tempo work.'}, thu:{duration:'25min', effort:'Zone 2 (deload)', detail:'Short easy recovery ride.'} },
+    /*W17*/{ tue:{duration:'60min', effort:'Z2 + 3×10min tempo', detail:'10min easy warm-up, 3×10min at RPE 6, 5min easy between, 5min easy cool-down.'}, thu:{duration:'40min', effort:'Zone 2', detail:'Easy aerobic base. RPE 3–4 throughout.'} },
+    /*W18*/{ tue:{duration:'65min', effort:'Z2 + 3×10min tempo', detail:'Same structure as week 17. Extend warm-up to 12min if feeling stiff.'}, thu:{duration:'45min', effort:'Zone 2', detail:'Steady easy ride. Fully conversational.'} },
+    /*W19*/{ tue:{duration:'65min', effort:'Z2 + 2×15min steady', detail:'10min easy warm-up, 2×15min at RPE 5–6, 7min easy between, 8min easy cool-down.'}, thu:{duration:'45min', effort:'Zone 2', detail:'Easy Zone 2 following hard Wednesday row.'} },
+    /*W20*/{ tue:{duration:'40min', effort:'Zone 2 (deload)', detail:'Recovery week. Easy spin only. No tempo work.'}, thu:{duration:'30min', effort:'Zone 2 (deload)', detail:'Easy recovery ride.'} },
+    /*W21*/{ tue:{duration:'70min', effort:'Z2 + 3×10min tempo', detail:'10min easy warm-up, 3×10min at RPE 6, 5min easy between, 15min easy cool-down.'}, thu:{duration:'45min', effort:'Zone 2', detail:'Easy aerobic base. Legs ready for Friday long row.'} },
+    /*W22*/{ tue:{duration:'70min', effort:'Z2 + 3×12min tempo', detail:'10min easy warm-up, 3×12min at RPE 6, 4min easy between, 8min easy cool-down.'}, thu:{duration:'45min', effort:'Zone 2', detail:'Steady Zone 2. No tempo work today.'} },
+    /*W23*/{ tue:{duration:'70min', effort:'Z2 + 2×15min steady', detail:'10min easy warm-up, 2×15min at RPE 5–6, 7min easy between, 13min easy cool-down.'}, thu:{duration:'50min', effort:'Zone 2', detail:'Easy aerobic base. Stay Zone 2.'} },
+    /*W24*/{ tue:{duration:'50min', effort:'Zone 2', detail:'Final week. Easy celebratory spin. No pressure — just enjoy the ride.'}, thu:{duration:'35min', effort:'Zone 2', detail:'Easy spin to close out the plan.'} },
+  ];    
+
+  /* Day slot metadata.
+     Indices 0-2 are core days (Mon/Wed/Fri data order).
+     Indices 3-4 are optional days (Tue/Thu data order).
+     getSession() maps: 0-2 → core[0-2], 3-4 → optional[0-1].
+     screenHome() renders in weekday display order [0,3,1,4,2]. */
   const DAY_META = [
-    { label: 'Day 1', short: 'D1', optional: false },
-    { label: 'Optional Day 1', short: 'O1', optional: true },
-    { label: 'Day 2', short: 'D2', optional: false },
-    { label: 'Optional Day 2', short: 'O2', optional: true },
-    { label: 'Day 3', short: 'D3', optional: false }
+    { label: 'Day 1',          short: 'D1', optional: false }, // index 0 → Monday
+    { label: 'Optional Day 1', short: 'O1', optional: true  }, // index 3 → Tuesday
+    { label: 'Day 2',          short: 'D2', optional: false }, // index 1 → Wednesday
+    { label: 'Optional Day 2', short: 'O2', optional: true  }, // index 4 → Thursday
+    { label: 'Day 3',          short: 'D3', optional: false }, // index 2 → Friday
   ];
 
 
@@ -387,7 +426,10 @@
     activeSess:    null,   // session object with halfMode already applied
     timerRunning:  false,  // used by render to label the pause/resume button
     paceError:     null,   // validation message shown on pace-input screen
-    resetConfirm:  false
+    resetConfirm:  false,
+    draftPace:     '',      // pace input value; updated via oninput; survives DOM re-render
+    confirmAbandon:false,   // inline confirm for "Abandon session" button
+    confirmDone:   false    // inline confirm for "Done Early" button
   };
 
   function saveState() {
@@ -521,12 +563,25 @@
     const sess = state.activeSess;
     const total = sess.reps || 1; // D and T sessions have no reps field; treat as 1
 
+    // Clear confirm states on any phase transition
+    state.confirmAbandon = false;
+    state.confirmDone    = false;
+
     if (_rep >= total) {
-      // All reps done — go to pace input
+      // All reps done
       _phase = 'complete';
       timerPause();
       releaseWakeLock();
-      goTo('pace-input');
+
+      if (sess.isRecovery) {
+        // Recovery rows skip pace input — mark complete directly
+        const key = `w${state.selWeek}-d${state.selDay}`;
+        state.sessions[key] = { completed:true, pace:null, label:sess.label, date:new Date().toISOString().slice(0,10) };
+        saveState();
+        goTo('session-done');
+      } else {
+        goTo('pace-input');
+      }
     } else {
       // More reps remain — start rest period
       _phase = 'rest';
@@ -538,6 +593,10 @@
 
   /* Called when a rest period ends — set up the next work rep */
   function _startNextWork() {
+    // Clear confirm states when entering a new rep
+    state.confirmAbandon = false;
+    state.confirmDone    = false;
+
     _rep++;
     _phase = 'work';
     _restStartMs = null;
@@ -683,7 +742,9 @@
 
   /* ── HOME ─────────────────────────────────────────────────── */
   function screenHome() {
-    const tiles = Array.from({length:5}, (_,di) => {
+    /* Render tiles in weekday display order: Mon(0) Tue(3) Wed(1) Thu(4) Fri(2).
+       di is the data index; the display position is just the map order. */
+    const tiles = [0, 3, 1, 4, 2].map(di => {
       const sess = getSession(state.week, di);
       const key  = `w${state.week}-d${di}`;
       const saved = state.sessions[key];
@@ -766,7 +827,10 @@
 
     // Session-specific guidance blurb
     let guide;
-    if (sess.type === 'distance') {
+    if (sess.isRecovery) {
+      // Recovery row: easy flat effort, no pace recording at the end
+      guide = `Easy <strong>20-minute row</strong> at conversational pace. RPE 3–4 — you should be able to speak in full sentences. This is a backup for when outdoor cycling isn't possible. Keep effort low so it doesn't interfere with core rowing sessions. No pace entry at the end.`;
+    } else if (sess.type === 'distance') {
       guide = `Row <strong>${sess.label}</strong> continuously. Watch the distance counter on the Merach. This app runs a stopwatch. Your split (/500m avg) is on the Merach display.`;
     } else if (sess.type === 'time') {
       guide = `Row for <strong>${sess.label}</strong>. This app counts down the time. Your split is on the Merach. Aim for an even effort throughout.`;
@@ -781,7 +845,7 @@
 
     return `
       <button class="back-btn" onclick="goTo('home')">← Back</button>
-      <p class="slabel">${meta.label.toUpperCase()}${meta.optional?' · OPTIONAL':''} — WEEK ${state.selWeek}</p>
+      <p class="slabel">${meta.label.toUpperCase()}${state.activeSess.isRecovery ? ' · INDOOR BACKUP' : meta.optional ? ' · OPTIONAL' : ''} — WEEK ${state.selWeek}</p>
       <h2 class="hd" style="font-size:44px;color:var(--text);margin-bottom:8px;">${sess.label.toUpperCase()}</h2>
       ${pill(sessTypeName(sess.type))}
       <div style="margin-top:20px;">${halfNote}${prevCard}</div>
@@ -799,6 +863,21 @@
     const pause = state.timerRunning ? 'Pause' : 'Resume';
     let center = '', controls = '';
 
+    /* Reusable inline confirm block for "Abandon session".
+       Replaces the ghost button with a confirm/cancel pair (resetConfirm pattern). */
+    const abandonBlock = state.confirmAbandon
+      ? `<div class="btn-row">
+           <button class="btn btn--red"   onclick="doAbandon()">Confirm — abandon</button>
+           <button class="btn btn--ghost" onclick="state.confirmAbandon=false;render()">Cancel</button>
+         </div>`
+      : `<button class="btn btn--ghost" onclick="state.confirmAbandon=true;render()">Abandon session</button>`;
+
+    /* Reusable confirm block for "Done Early" on timed sessions (time, interval_t).
+       Replaces the primary button on first tap, executes on second tap. */
+    const doneEarlyBtn = (action) => state.confirmDone
+      ? `<button class="btn btn--red" onclick="${action}">Confirm — finish now</button>`
+      : `<button class="btn btn--orange" onclick="state.confirmDone=true;render()">Done Early</button>`;
+
     /* ---- REST PHASE ---------------------------------------- */
     if (_phase === 'rest') {
       center = `
@@ -811,7 +890,7 @@
           <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
           <button class="btn btn--blue"    onclick="skipRest()">Skip Rest →</button>
         </div>
-        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+        ${abandonBlock}`;
 
     /* ---- DISTANCE PIECE (stopwatch) ----------------------- */
     } else if (sess.type === 'distance') {
@@ -829,9 +908,9 @@
           <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
           <button class="btn btn--orange"  onclick="sessionDone()">Done ✓</button>
         </div>
-        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+        ${abandonBlock}`;
 
-    /* ---- TIMED PIECE (countdown) -------------------------- */
+    /* ---- TIMED PIECE (countdown) — Done Early needs confirm */
     } else if (sess.type === 'time') {
       center = `
         <div class="phase-label" style="color:var(--orange);">REMAINING</div>
@@ -840,11 +919,11 @@
       controls = `
         <div class="btn-row">
           <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
-          <button class="btn btn--orange"  onclick="sessionDone()">Done Early</button>
+          ${doneEarlyBtn('sessionDone()')}
         </div>
-        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+        ${abandonBlock}`;
 
-    /* ---- INTERVAL DISTANCE (stopwatch per rep) ------------ */
+    /* ---- INTERVAL DISTANCE (stopwatch per rep) — Rep Done is definitive, no confirm */
     } else if (sess.type === 'interval_d') {
       const numClass = sess.workMeters >= 10000 ? 'big-num big-num--sm' : 'big-num';
       center = `
@@ -861,9 +940,9 @@
           <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
           <button class="btn btn--orange"  onclick="repDone()">Rep Done →</button>
         </div>
-        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+        ${abandonBlock}`;
 
-    /* ---- INTERVAL TIMED (countdown per rep) --------------- */
+    /* ---- INTERVAL TIMED (countdown per rep) — Done Early needs confirm */
     } else if (sess.type === 'interval_t') {
       center = `
         <div class="rep-label">REP ${_rep} OF ${sess.reps}</div>
@@ -873,9 +952,9 @@
       controls = `
         <div class="btn-row">
           <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
-          <button class="btn btn--orange"  onclick="repDone()">Done Early</button>
+          ${doneEarlyBtn('repDone()')}
         </div>
-        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+        ${abandonBlock}`;
     }
 
     return `
@@ -900,8 +979,9 @@
       </div>
       <p class="slabel" style="text-align:center;margin-bottom:8px;">AVERAGE SPLIT PER 500M</p>
       <input class="pace-field${state.paceError?' err':''}" type="text" inputmode="text"
-        placeholder="2:05.0" id="paceField" id="paceField" oninput="state.paceError=null;" 
-        onkeydown="if(event.key==='Enter'){submitPace(false)}" autocapitalize="off" 
+        placeholder="2:05.0" id="paceField" value="${state.draftPace}"
+        oninput="state.draftPace=this.value;state.paceError=null;"
+        onkeydown="if(event.key==='Enter'){submitPace(false)}" autocapitalize="off"
         autocomplete="off" spellcheck="false" />
       <p class="pace-hint">M:SS or M:SS.t — read from Merach avg split display</p>
       ${errMsg}
@@ -1048,16 +1128,30 @@
 
   /* Tap a session tile on the home screen */
   function selectSession(week, dayIdx) {
-    state.selWeek   = week;
-    state.selDay    = dayIdx;
-    state.activeSess= getSession(week, dayIdx);
-    state.paceError = null;
-    goTo('session-start');
+    state.selWeek      = week;
+    state.selDay       = dayIdx;
+    state.paceError    = null;
+    state.draftPace    = '';      // reset draft so stale input doesn't persist
+    state.confirmAbandon = false;
+    state.confirmDone    = false;
+
+    if (DAY_META[dayIdx].optional) {
+      // Optional days offer a choice: outdoor cycling or indoor rowing backup
+      state.activeSess = null;
+      goTo('optional-choice');
+    } else {
+      state.activeSess = getSession(week, dayIdx);
+      goTo('session-start');
+    }
   }
 
   /* Tap "Begin Session" */
   function beginSession() {
     const sess = state.activeSess;
+
+    // Clear any lingering confirmation states from session-start screen
+    state.confirmAbandon = false;
+    state.confirmDone    = false;
 
     // Reset all timer state
     _phase = 'work';
@@ -1079,6 +1173,7 @@
 
   /* Tap "Rep Done" (interval_d) or "Done Early" (interval_t) */
   function repDone() {
+    state.confirmDone = false; // clear confirm state before advancing
     _repComplete();
   }
 
@@ -1099,17 +1194,26 @@
 
   /* Tap "Done" on a single distance or time session */
   function sessionDone() {
-    console.log('sessionDone');
+    state.confirmDone = false; // clear confirm state
     _phase = 'complete';
     timerPause();
     releaseWakeLock();
-    state.paceError = null;
-    goTo('pace-input');
+
+    if (state.activeSess.isRecovery) {
+      // Recovery rows skip pace input
+      const key = `w${state.selWeek}-d${state.selDay}`;
+      state.sessions[key] = { completed:true, pace:null, label:state.activeSess.label, date:new Date().toISOString().slice(0,10) };
+      saveState();
+      goTo('session-done');
+    } else {
+      state.paceError = null;
+      goTo('pace-input');
+    }
   }
 
   /* Abandon mid-session and return home */
   function abandonSession() {
-    console.log('abandonSession');
+    state.confirmAbandon = false; // clear confirm state
     _phase = 'idle';
     timerPause();
     timerReset();
@@ -1117,13 +1221,47 @@
     goTo('home');
   }
 
+  /* Called from optional-choice screen: 'cycle' goes to cycle info,
+     'row' loads a light recovery rowing session and goes to session-start. */
+  function chooseOptional(mode) {
+    if (mode === 'cycle') {
+      goTo('cycle-info');
+    } else {
+      // Indoor rowing backup: easy 20-minute recovery session.
+      // isRecovery flag skips pace entry on completion.
+      state.activeSess = { ...T(20), label: '20min easy row', isRecovery: true };
+      goTo('session-start');
+    }
+  }
+
+  /* Mark an outdoor cycling session complete (no pace, no timer). */
+  function markCycleDone() {
+    const key = `w${state.selWeek}-d${state.selDay}`;
+    state.sessions[key] = {
+      completed: true,
+      pace:      null,
+      label:     'Cycling',
+      date:      new Date().toISOString().slice(0,10)
+    };
+    saveState();
+    goTo('session-done');
+  }
+
+  /* Confirm-step executor for abandon. Called only after confirmAbandon=true. */
+  function doAbandon() {
+    abandonSession();
+  }
+
+
+    
   /* Submit pace from the pace-input screen.
      skip=true records the session as complete but without a pace value. */
 function submitPace(skip=false) {
-  const field = document.getElementById('paceField');
-  const val = field ? field.value.trim() : '';
-
-  console.log('submitPace', { skip, val, activeSess: state.activeSess });
+    /* Read from state.draftPace rather than querying the DOM.
+       Tapping a button triggers blur on the input, which can call render() and
+       destroy the DOM node before the click fires. draftPace is updated via
+       oninput and survives any re-render. */
+    const val = state.draftPace.trim();
 
   if (!skip && !validPace(val)) {
     state.paceError = 'Use MSS or MSS.t, e.g. 2:05.3';
