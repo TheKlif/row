@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <!--
+    viewport: no zooming, match device width exactly.
+    apple-mobile-web-app: when saved to home screen on iOS/Android,
+    hides the browser chrome and runs fullscreen.
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Pete Plan</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       CSS CUSTOM PROPERTIES
+       Defined on :root so any element can reference them via var(--name).
+       Changing one value here updates it everywhere it's used.
+    ============================================================ */
+    :root {
+      --bg:         #0F0F0F;
+      --surface:    #181818;
+      --border:     #242424;
+      --border-mid: #2A2A2A;
+      --text:       #E8E8E8;
+      --muted:      #888;
+      --dim:        #555;
+      --dimmer:     #444;
+
+      --orange: #FF6B35;   /* work / primary action */
+      --blue:   #3B9EFF;   /* rest period */
+      --green:  #4CAF77;   /* complete / success */
+      --red:    #EF4444;   /* danger / warning */
+
+      --radius:     18px;
+      --radius-sm:  14px;
+      --radius-pill:20px;
+
+      --font-display: 'Bebas Neue', Impact, sans-serif;
+      --font-mono:    'Space Mono', 'Courier New', monospace;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+    }
+
+    /* ============================================================
+       RESET & BASE
+       box-sizing: border-box is almost always what you want —
+       padding/border count toward an element's stated width,
+       rather than being added on top of it.
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* #app is the single container. All screen HTML is injected here. */
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+
+    /* Active session needs every pixel — tighten the top padding */
+    #app.is-active { padding-top: 14px; }
+
+    /* ============================================================
+       TYPOGRAPHY HELPERS
+    ============================================================ */
+    .hd   { font-family: var(--font-display); letter-spacing: 0.04em; line-height: 1; }
+    .mono { font-family: var(--font-mono); }
+
+    /* ============================================================
+       CARDS
+    ============================================================ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+    .card--orange { border-color: var(--orange); }
+    .card--green  { border-color: var(--green);  }
+    .card--blue   { border-color: var(--blue);   }
+    .card--red    { border-color: var(--red);     }
+    .card--dim    { border-color: #1E1E1E; background: #141414; }
+
+    /* ============================================================
+       PILL BADGES (small labeled tags)
+    ============================================================ */
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      background: var(--border);
+      color: var(--dim);
+    }
+    .pill--orange { background: rgba(255,107,53,0.15); color: var(--orange); }
+    .pill--green  { background: rgba(76,175,119,0.15); color: var(--green);  }
+    .pill--blue   { background: rgba(59,158,255,0.15); color: var(--blue);   }
+    .pill--red    { background: rgba(239,68,68,0.15);  color: var(--red);    }
+
+    /* ============================================================
+       SECTION LABEL (small all-caps above a heading)
+    ============================================================ */
+    .slabel {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--dimmer);
+      margin-bottom: 8px;
+    }
+
+    /* ============================================================
+       BUTTONS
+    ============================================================ */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 18px 24px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+      text-align: center;
+      transition: opacity 0.1s;
+      letter-spacing: 0.01em;
+    }
+    .btn:active { opacity: 0.7; }
+    .btn--orange  { background: var(--orange); color: #111; }
+    .btn--green   { background: var(--green);  color: #111; }
+    .btn--blue    { background: var(--blue);   color: #111; }
+    .btn--red     { background: var(--red);    color: #fff; }
+    .btn--surface { background: var(--surface); color: var(--muted); border: 1px solid var(--border-mid); }
+    .btn--ghost   { background: transparent; color: var(--dim); border: 1px solid var(--border-mid); font-size: 15px; }
+    .btn--dis     { background: var(--border); color: #444; cursor: default; }
+    .btn-row      { display: flex; gap: 10px; margin-bottom: 10px; }
+    .btn-row .btn { flex: 1; margin-bottom: 0; }
+
+    /* ============================================================
+       SESSION TILES (home screen)
+    ============================================================ */
+    .tile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.12s;
+    }
+    .tile:active { border-color: var(--orange); }
+    .tile.done   { opacity: 0.42; cursor: default; border-color: #1E1E1E; background: #141414; }
+    .tile.opt    { border-style: dashed; }
+    .tile-icon   { font-size: 28px; margin-right: 14px; }
+    .tile-name   { font-family: var(--font-display); font-size: 19px; color: var(--text); }
+    .tile-sub    { font-family: var(--font-mono); font-size: 11px; color: var(--dim); margin-top: 2px; letter-spacing: 0.05em; }
+    .tile-pace   { font-family: var(--font-mono); font-size: 13px; color: var(--green); text-align: right; }
+
+    /* ============================================================
+       TIMER / DISPLAY ELEMENTS (active session screen)
+       These are the biggest, most important numbers on screen.
+    ============================================================ */
+
+    /* The main large number — time or distance */
+    .big-num {
+      font-family: var(--font-display);
+      font-size: 100px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
+    /* Slightly smaller for wide numbers like "10,000m" */
+    .big-num--sm { font-size: 72px; }
+
+    /* Phase label above the big number */
+    .phase-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    /* Rep indicator above the phase label */
+    .rep-label {
+      font-family: var(--font-display);
+      font-size: 26px;
+      color: var(--dim);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    /* Sub-note below the big number */
+    .num-sub {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+      letter-spacing: 0.06em;
+    }
+
+    /* The "target" label + value shown for distance sessions */
+    .target-wrap { text-align: center; margin-bottom: 12px; }
+    .target-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--dimmer); margin-bottom: 4px; }
+    .target-val   { font-family: var(--font-display); font-size: 64px; color: var(--text); line-height: 1; }
+
+    /* ============================================================
+       PACE INPUT
+    ============================================================ */
+    .pace-field {
+      width: 100%;
+      background: var(--surface);
+      border: 2px solid var(--border-mid);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 36px;
+      font-weight: 700;
+      text-align: center;
+      padding: 20px;
+      outline: none;
+      margin-bottom: 6px;
+      transition: border-color 0.15s;
+    }
+    .pace-field:focus { border-color: var(--orange); }
+    .pace-field.err   { border-color: var(--red); }
+    .pace-hint { font-family: var(--font-mono); font-size: 12px; color: var(--dim); text-align: center; margin-bottom: 16px; }
+
+    /* ============================================================
+       HISTORY TABLE
+    ============================================================ */
+    .hist-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .hist-row:last-child { border-bottom: none; }
+    .hist-desc  { color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .hist-pace  { color: var(--green); font-family: var(--font-mono); font-size: 14px; font-weight: 700; flex-shrink: 0; }
+
+    /* ============================================================
+       MISC HELPERS
+    ============================================================ */
+    .back-btn { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 14px; padding: 0; margin-bottom: 26px; display: block; }
+    .flex-between { display: flex; justify-content: space-between; align-items: flex-start; }
+    .flex-row { display: flex; gap: 10px; }
+    .center { text-align: center; }
+    .mt-sm { margin-top: 8px; }
+    .mt-md { margin-top: 16px; }
+    .mt-lg { margin-top: 28px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  </style>
+</head>
+
+<body>
+  <div id="app"><p style="color:#333;font-family:monospace;padding:40px 20px;">Loading...</p></div>
+
+  <script>
+  /* ============================================================
+     APP ARCHITECTURE OVERVIEW
+     
+     This app uses a simple pattern sometimes called "single-state
+     rendering." There is one object (state) that holds everything.
+     When something changes, you update state and call render().
+     render() looks at state.screen and calls the right function
+     to build an HTML string, which gets injected into #app.
+     
+     Screens:
+       home            weekly session grid
+       session-start   session details + pace reference + begin button
+       session-active  the live timer / counter display
+       pace-input      enter your split after finishing
+       session-done    completion confirmation
+       history         all logged pace data
+       settings        week navigation, half mode, reset
+     
+     Timer state is kept in module-level variables (not in state)
+     because setInterval handles can't be serialized to JSON.
+     If the page refreshes mid-session, the timer resets.
+     Everything else (week, history, halfMode) is persisted to
+     localStorage and survives refreshes.
+  ============================================================ */
+
+
+  /* ============================================================
+     PLAN DATA
+     
+     The Pete Plan Beginner Training — 24 weeks, 5 sessions/week.
+     Source: https://thepeteplan.wordpress.com/beginner-training/
+     
+     Session type constructors (used below):
+       D(meters)                  — single distance piece
+       T(minutes)                 — single timed piece
+       ID(reps, meters, restMins) — intervals: distance pieces
+       IT(reps, minutes, restMins)— intervals: timed pieces
+  ============================================================ */
+
+  const D  = (m)        => ({ type:'distance',   meters:m,          label:`${m.toLocaleString()}m` });
+  const T  = (min)      => ({ type:'time',        seconds:min*60,    label:`${min}min` });
+  const ID = (r,d,rm)   => ({ type:'interval_d',  reps:r, workMeters:d,       restSeconds:rm*60, label:`${r} × ${d.toLocaleString()}m / ${rm}min rest` });
+  const IT = (r,m,rm)   => ({ type:'interval_t',  reps:r, workSeconds:m*60,   restSeconds:rm*60, label:`${r} × ${m}min / ${rm}min rest` });
+
+  /* 24-week plan. Each week: { core:[day1,day2,day3], optional:[day4,day5] } */
+  const PLAN = [
+    /*W01*/ { core:[D(5000),  ID(6,500,2),  D(5000)  ], optional:[T(20),       IT(2,10,2)  ] },
+    /*W02*/ { core:[D(5500),  ID(4,750,2),  D(5500)  ], optional:[T(20),       IT(3,8,2)   ] },
+    /*W03*/ { core:[D(6000),  ID(2,2000,4), D(6000)  ], optional:[D(5000),     ID(6,500,2) ] },
+    /*W04*/ { core:[D(6500),  ID(3,1000,3), D(6500)  ], optional:[D(6000),     ID(2,2500,2)] },
+    /*W05*/ { core:[D(7000),  ID(4,800,2),  D(7000)  ], optional:[T(20),       IT(2,10,2)  ] },
+    /*W06*/ { core:[D(7500),  ID(3,2000,4), D(7500)  ], optional:[D(5000),     ID(6,500,2) ] },
+    /*W07*/ { core:[D(8000),  ID(7,500,2),  D(8000)  ], optional:[D(6000),     ID(3,1500,3)] },
+    /*W08*/ { core:[D(8500),  ID(4,1500,3), D(8000)  ], optional:[T(25),       ID(3,1000,3)] },
+    /*W09*/ { core:[D(9000),  ID(4,800,2),  D(8000)  ], optional:[D(8000),     IT(2,10,2)  ] },
+    /*W10*/ { core:[D(9500),  ID(3,2000,4), D(8000)  ], optional:[D(8000),     ID(7,500,2) ] },
+    /*W11*/ { core:[D(10000), ID(8,500,2),  D(8000)  ], optional:[T(25),       ID(4,1500,3)] },
+    /*W12*/ { core:[D(10000), ID(4,1500,3), IT(3,10,2)], optional:[D(8000),    ID(4,800,2) ] },
+    /*W13*/ { core:[D(10000), ID(4,1000,3), IT(2,15,2)], optional:[D(8000),    ID(3,2000,4)] },
+    /*W14*/ { core:[D(10000), ID(3,2000,4), IT(4,8,2) ], optional:[T(30),      ID(7,500,2) ] },
+    /*W15*/ { core:[D(10000), ID(5,750,2),  IT(3,10,2)], optional:[D(8000),    ID(4,1500,3)] },
+    /*W16*/ { core:[D(10500), ID(5,1500,3), T(30)     ], optional:[D(10000),   ID(4,1000,3)] },
+    /*W17*/ { core:[D(10500), ID(8,500,2),  IT(2,15,2)], optional:[T(30),      IT(4,8,2)   ] },
+    /*W18*/ { core:[D(11000), ID(4,2000,4), T(30)     ], optional:[D(10000),   ID(4,1000,3)] },
+    /*W19*/ { core:[D(10000), ID(5,800,2),  IT(3,10,2)], optional:[T(30),      ID(4,2000,4)] },
+    /*W20*/ { core:[D(12000), ID(5,1500,3), T(30)     ], optional:[D(10000),   ID(8,500,2) ] },
+    /*W21*/ { core:[D(10000), ID(4,1000,3), IT(4,8,2) ], optional:[D(12000),   ID(5,1500,3)] },
+    /*W22*/ { core:[D(12000), ID(4,2000,4), T(30)     ], optional:[IT(3,10,2), ID(5,800,2) ] },
+    /*W23*/ { core:[D(10000), ID(8,500,2),  IT(2,15,2)], optional:[D(10000),   ID(4,2000,4)] },
+    /*W24*/ { core:[D(12000), ID(5,1500,3), T(30)     ], optional:[IT(2,15,2), ID(4,1000,3)] },
+  ];
+
+  /* Day slot metadata — index 0-4 maps to Day 1, 2, 3, Optional 4, Optional 5 */
+  const DAY_META = [
+    { label:'Day 1',    short:'D1', optional:false },
+    { label:'Day 2',    short:'D2', optional:false },
+    { label:'Day 3',    short:'D3', optional:false },
+    { label:'Optional', short:'O4', optional:true  },
+    { label:'Optional', short:'O5', optional:true  },
+  ];
+
+
+  /* ============================================================
+     STATE & STORAGE
+     
+     Only week, halfMode, and sessions are persisted to localStorage.
+     Everything else is transient (resets on page load).
+  ============================================================ */
+
+  const STORAGE_KEY = 'pete-plan-v1';
+
+  let state = {
+    screen:        'home',
+    week:          1,
+    halfMode:      false,
+    sessions:      {},     // { "w1-d0": { completed, pace, label, date }, ... }
+
+    // Transient — set when entering a session flow
+    selWeek:       null,   // which week was tapped
+    selDay:        null,   // which day index (0-4) was tapped
+    activeSess:    null,   // session object with halfMode already applied
+    timerRunning:  false,  // used by render to label the pause/resume button
+    paceError:     null,   // validation message shown on pace-input screen
+    resetConfirm:  false
+  };
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      week:     state.week,
+      halfMode: state.halfMode,
+      sessions: state.sessions
+    }));
+  }
+
+  function loadState() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }
+
+
+  /* ============================================================
+     TIMER SYSTEM
+     
+     All timer state lives here in module scope (not in `state`).
+     setInterval handles can't be stored in JSON, so none of this
+     survives a page refresh.
+     
+     Design: we record Date.now() when the timer starts/resumes,
+     and compute elapsed time on demand as (Date.now() - _startMs).
+     This way pausing and resuming never causes drift.
+     
+     _phase values:
+       'idle'     — no session running
+       'work'     — active rowing period
+       'rest'     — rest period between intervals
+       'complete' — session finished (waiting for pace input)
+  ============================================================ */
+
+  let _handle          = null;   // setInterval return value
+  let _startMs         = null;   // Date.now() when current run began
+  let _baseMs          = 0;      // ms accumulated before current run (for pause/resume)
+  let _phase           = 'idle';
+  let _rep             = 1;      // current rep number, 1-indexed
+  let _workEndMs       = null;   // absolute time when work countdown ends (time sessions)
+  let _workRemMs       = null;   // saved remaining work ms when paused mid-countdown
+  let _restStartMs     = null;   // Date.now() when rest began
+  let _restRemMs       = null;   // saved remaining rest ms when paused mid-rest
+  let _wakeLock        = null;   // Screen Wake Lock API handle
+
+  /* Elapsed ms in current work period (used for stopwatch display) */
+  function elapsedMs() {
+    return _startMs !== null ? _baseMs + (Date.now() - _startMs) : _baseMs;
+  }
+
+  /* Start or resume the timer */
+  function timerStart() {
+    if (_handle) return; // already running
+    _startMs = Date.now();
+    state.timerRunning = true;
+
+    // If we paused mid work-countdown, reconstruct the end time
+    if (_workRemMs !== null) {
+      _workEndMs = Date.now() + _workRemMs;
+      _workRemMs = null;
+    }
+
+    // If we paused mid-rest, reconstruct the rest start point so remaining time is correct
+    if (_restRemMs !== null && _phase === 'rest') {
+      const sess = state.activeSess;
+      _restStartMs = Date.now() - (sess.restSeconds * 1000 - _restRemMs);
+      _restRemMs = null;
+    }
+
+    _handle = setInterval(_tick, 100); // update display 10× per second
+  }
+
+  /* Pause the timer, saving remaining time for both work and rest */
+  function timerPause() {
+    if (!_handle) return;
+    _baseMs += Date.now() - _startMs;
+    _startMs = null;
+
+    // Save remaining work countdown so resume can reconstruct _workEndMs
+    if (_workEndMs !== null) {
+      _workRemMs = Math.max(0, _workEndMs - Date.now());
+      _workEndMs = null;
+    }
+
+    // Save remaining rest countdown so resume can reconstruct _restStartMs
+    if (_restStartMs !== null) {
+      const sess = state.activeSess;
+      _restRemMs = Math.max(0, sess.restSeconds * 1000 - (Date.now() - _restStartMs));
+      _restStartMs = null;
+    }
+
+    clearInterval(_handle);
+    _handle = null;
+    state.timerRunning = false;
+    render();
+  }
+
+  /* Reset the elapsed work timer for the start of a new rep */
+  function timerReset() {
+    _baseMs = 0;
+    _workRemMs = null;
+    _startMs = _handle ? Date.now() : null; // stay running if already running
+  }
+
+  /* Called every 100ms. Handles auto-advances and triggers re-render. */
+  function _tick() {
+    const sess = state.activeSess;
+    if (!sess) return;
+
+    // Auto-advance: rest period countdown reached zero
+    if (_phase === 'rest' && _restStartMs !== null) {
+      if (Date.now() - _restStartMs >= sess.restSeconds * 1000) {
+        _startNextWork();
+        return;
+      }
+    }
+
+    // Auto-advance: work countdown (time-based sessions) reached zero
+    if (_phase === 'work' && _workEndMs !== null) {
+      if (Date.now() >= _workEndMs) {
+        _repComplete();
+        return;
+      }
+    }
+
+    render();
+  }
+
+  /* Called when a rep finishes (either via button tap or timer expiry) */
+  function _repComplete() {
+    const sess = state.activeSess;
+    const total = sess.reps || 1; // D and T sessions have no reps field; treat as 1
+
+    if (_rep >= total) {
+      // All reps done — go to pace input
+      _phase = 'complete';
+      timerPause();
+      releaseWakeLock();
+      goTo('pace-input');
+    } else {
+      // More reps remain — start rest period
+      _phase = 'rest';
+      _restStartMs = Date.now();
+      _workEndMs = null;
+      render();
+    }
+  }
+
+  /* Called when a rest period ends — set up the next work rep */
+  function _startNextWork() {
+    _rep++;
+    _phase = 'work';
+    _restStartMs = null;
+    _restRemMs = null;
+    timerReset();
+
+    // For timed intervals, set the new work end time
+    if (state.activeSess.type === 'interval_t') {
+      _workEndMs = Date.now() + state.activeSess.workSeconds * 1000;
+    }
+
+    render();
+  }
+
+  /* Wake Lock API: requests that the screen not turn off during a session */
+  async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try { _wakeLock = await navigator.wakeLock.request('screen'); }
+      catch(e) { /* not available on all devices; safe to ignore */ }
+    }
+  }
+
+  function releaseWakeLock() {
+    if (_wakeLock) { _wakeLock.release(); _wakeLock = null; }
+  }
+
+
+  /* ============================================================
+     FORMATTING UTILITIES
+  ============================================================ */
+
+  /* Milliseconds → "M:SS" string. Used for stopwatch and countdown display. */
+  function fmtMs(ms) {
+    const sec = Math.max(0, Math.floor(ms / 1000));
+    return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  }
+
+  /* Current rest time remaining as "M:SS" */
+  function fmtRest() {
+    const sess = state.activeSess;
+    if (!sess) return '0:00';
+    if (_restStartMs !== null) return fmtMs(sess.restSeconds * 1000 - (Date.now() - _restStartMs));
+    if (_restRemMs   !== null) return fmtMs(_restRemMs);
+    return fmtMs(sess.restSeconds * 1000);
+  }
+
+  /* Current work time remaining as "M:SS" (countdown sessions only) */
+  function fmtWorkRemaining() {
+    if (_workEndMs  !== null) return fmtMs(Math.max(0, _workEndMs - Date.now()));
+    if (_workRemMs  !== null) return fmtMs(_workRemMs);
+    const sess = state.activeSess;
+    if (!sess) return '0:00';
+    return sess.type === 'time' ? fmtMs(sess.seconds * 1000) : fmtMs(sess.workSeconds * 1000);
+  }
+
+  /* Seconds → human label: 120 → "2min", 90 → "1:30" */
+  function fmtSec(s) {
+    const m = Math.floor(s / 60), r = s % 60;
+    return r === 0 ? `${m}min` : `${m}:${String(r).padStart(2,'0')}`;
+  }
+
+  /* Pace validation: must be M:SS or M:SS.t — e.g. "2:05" or "2:05.3" */
+  function validPace(str) {
+    return /^\d:\d{2}(\.\d)?$/.test(str.trim());
+  }
+
+
+  /* ============================================================
+     PLAN HELPERS
+  ============================================================ */
+
+  /* Return a session object for week (1-24) and dayIdx (0-4),
+     with halfMode applied if enabled. */
+  function getSession(week, dayIdx) {
+    const w = PLAN[week - 1];
+    const raw = dayIdx < 3 ? w.core[dayIdx] : w.optional[dayIdx - 3];
+    return applyHalf({ ...raw }); // spread to avoid mutating PLAN
+  }
+
+  /* Halve a session. Distance sessions: halve meters. Time: halve seconds.
+     Intervals: halve the rep count (not the piece distance). */
+  function applyHalf(s) {
+    if (!state.halfMode) return s;
+    switch (s.type) {
+      case 'distance':
+        s.meters  = Math.round(s.meters / 2);
+        s.label   = `${s.meters.toLocaleString()}m`;
+        break;
+      case 'time':
+        s.seconds = s.seconds / 2;
+        s.label   = `${s.seconds / 60}min`;
+        break;
+      case 'interval_d':
+        s.reps  = Math.max(1, Math.floor(s.reps / 2));
+        s.label = `${s.reps} × ${s.workMeters.toLocaleString()}m / ${s.restSeconds/60}min rest`;
+        break;
+      case 'interval_t':
+        s.reps  = Math.max(1, Math.floor(s.reps / 2));
+        s.label = `${s.reps} × ${s.workSeconds/60}min / ${s.restSeconds/60}min rest`;
+        break;
+    }
+    return s;
+  }
+
+  /* Search backwards through history for the most recent completion of
+     a session with the same label. Returns { pace, week, dayIdx } or null. */
+  function findPrevPace(label, curWeek, curDay) {
+    for (let w = curWeek; w >= 1; w--) {
+      for (let d = 4; d >= 0; d--) {
+        if (w === curWeek && d >= curDay) continue; // skip current and future
+        const s = state.sessions[`w${w}-d${d}`];
+        if (s?.completed && s.label === label && s.pace) {
+          return { pace: s.pace, week: w, dayIdx: d };
+        }
+      }
+    }
+    return null;
+  }
+
+  /* Icon and type name for display */
+  function sessIcon(type) {
+    return type === 'distance' ? '🚣' : type === 'time' ? '⏱' : '🔁';
+  }
+  function sessTypeName(type) {
+    return type === 'distance' ? 'DISTANCE' : type === 'time' ? 'TIMED' : 'INTERVALS';
+  }
+
+  /* Check if all 3 core sessions for a week are complete */
+  function coresDone(week) {
+    return [0,1,2].every(d => state.sessions[`w${week}-d${d}`]?.completed);
+  }
+
+
+  /* ============================================================
+     SCREEN RENDERERS
+     Each function returns an HTML string.
+     render() picks the right one and sets #app.innerHTML.
+  ============================================================ */
+
+  /* Reusable pill badge */
+  function pill(text, v='') {
+    return `<span class="pill${v?' pill--'+v:''}">${text}</span>`;
+  }
+
+  /* ── HOME ─────────────────────────────────────────────────── */
+  function screenHome() {
+    const tiles = Array.from({length:5}, (_,di) => {
+      const sess = getSession(state.week, di);
+      const key  = `w${state.week}-d${di}`;
+      const saved = state.sessions[key];
+      const done  = !!saved?.completed;
+      const meta  = DAY_META[di];
+      const bigNum = sess.label.length > 8 ? 'tile-name' : 'tile-name'; // future hook
+
+      return `
+        <button class="tile${done?' done':''}${meta.optional?' opt':''}"
+          onclick="${done ? '' : `selectSession(${state.week},${di})`}">
+          <div style="display:flex;align-items:center;">
+            <span class="tile-icon">${sessIcon(sess.type)}</span>
+            <div>
+              <div class="tile-name">${meta.label.toUpperCase()}</div>
+              <div class="tile-sub">${sess.label}${meta.optional?' · OPTIONAL':''}</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            ${done
+              ? `<div class="tile-pace">${saved.pace || '—'}</div><div style="color:var(--green);font-size:18px;">✓</div>`
+              : `<span style="color:var(--border-mid);font-size:16px;">→</span>`}
+          </div>
+        </button>`;
+    }).join('');
+
+    const halfBadge = state.halfMode ? `
+      <div class="card card--orange" style="padding:12px 16px;margin-bottom:16px;">
+        ${pill('HALF MODE ON','orange')}
+        <span style="color:var(--muted);font-size:13px;margin-left:10px;">All sessions are halved</span>
+      </div>` : '';
+
+    const advCard = coresDone(state.week) && state.week < 24 ? `
+      <div class="card card--green" style="margin-bottom:16px;">
+        ${pill('WEEK '+state.week+' CORE DONE','green')}
+        <p style="color:var(--muted);font-size:14px;margin:10px 0 14px;">All 3 core sessions complete.</p>
+        <button class="btn btn--green" style="margin-bottom:0;" onclick="changeWeek(1)">Advance to Week ${state.week+1} →</button>
+      </div>` : '';
+
+    return `
+      <div class="flex-between" style="margin-bottom:28px;">
+        <div>
+          <p class="slabel">PETE PLAN — WEEK</p>
+          <div class="hd" style="font-size:60px;color:var(--text);line-height:1;">${state.week}</div>
+          <p class="slabel">OF 24</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;padding-top:4px;">
+          <button class="btn btn--ghost" style="width:auto;padding:8px 14px;margin-bottom:0;font-size:13px;" onclick="goTo('history')">History</button>
+          <button class="btn btn--ghost" style="width:auto;padding:8px 14px;margin-bottom:0;font-size:13px;" onclick="goTo('settings')">Settings</button>
+        </div>
+      </div>
+      ${halfBadge}${advCard}
+      <p class="slabel">THIS WEEK</p>
+      ${tiles}`;
+  }
+
+  /* ── SESSION START ────────────────────────────────────────── */
+  function screenSessionStart() {
+    const sess = state.activeSess;
+    const meta = DAY_META[state.selDay];
+    const prev = findPrevPace(sess.label, state.selWeek, state.selDay);
+
+    const prevCard = prev ? `
+      <div class="card card--green">
+        ${pill('PREVIOUS PACE','green')}
+        <div style="display:flex;align-items:baseline;gap:12px;margin-top:10px;">
+          <span class="hd" style="font-size:44px;color:var(--green);">${prev.pace}</span>
+          <span style="color:var(--dim);font-size:12px;font-family:var(--font-mono);">/500m · Wk ${prev.week} ${DAY_META[prev.dayIdx].label}</span>
+        </div>
+        <p style="color:var(--muted);font-size:13px;margin-top:6px;line-height:1.5;">
+          Aim to match this. Push slightly harder on the last rep or final 500m if you can.
+        </p>
+      </div>` : `
+      <div class="card">
+        ${pill('NO PRIOR PACE')}
+        <p style="color:var(--muted);font-size:13px;margin-top:8px;line-height:1.5;">
+          First time through this session. Start conservative — you can always finish strong.
+          Record your average split from the Merach when done.
+        </p>
+      </div>`;
+
+    // Session-specific guidance blurb
+    const guide = {
+      distance:   `Row <strong>${sess.label}</strong> continuously. Watch the distance counter on the Merach. This app runs a stopwatch. Your split (/500m avg) is on the Merach display.`,
+      time:       `Row for <strong>${sess.label}</strong>. This app counts down the time. Your split is on the Merach. Aim for an even effort throughout.`,
+      interval_d: `<strong>${sess.reps} × ${sess.workMeters.toLocaleString()}m</strong> with ${fmtSec(sess.restSeconds)} rest between reps. Watch the Merach for distance. This app times the rest and shows a stopwatch per rep. Tap Rep Done when you hit your distance.`,
+      interval_t: `<strong>${sess.reps} × ${sess.workSeconds/60}min</strong> with ${fmtSec(sess.restSeconds)} rest between reps. This app times both the work and rest periods automatically.`
+    }[sess.type];
+
+    const halfNote = state.halfMode
+      ? `<div style="margin-bottom:12px;">${pill('HALF MODE','orange')} <span style="color:var(--orange);font-size:13px;margin-left:8px;">Session has been halved</span></div>`
+      : '';
+
+    return `
+      <button class="back-btn" onclick="goTo('home')">← Back</button>
+      <p class="slabel">${meta.label.toUpperCase()}${meta.optional?' · OPTIONAL':''} — WEEK ${state.selWeek}</p>
+      <h2 class="hd" style="font-size:44px;color:var(--text);margin-bottom:8px;">${sess.label.toUpperCase()}</h2>
+      ${pill(sessTypeName(sess.type))}
+      <div style="margin-top:20px;">${halfNote}${prevCard}</div>
+      <div class="card" style="margin-bottom:20px;">
+        <p class="slabel" style="margin-bottom:8px;">HOW THIS WORKS</p>
+        <p style="color:var(--muted);font-size:14px;line-height:1.6;">${guide}</p>
+      </div>
+      <button class="btn btn--orange" onclick="beginSession()">Begin Session →</button>
+      <button class="btn btn--ghost"  onclick="goTo('home')">Cancel</button>`;
+  }
+
+  /* ── SESSION ACTIVE ───────────────────────────────────────── */
+  function screenSessionActive() {
+    const sess  = state.activeSess;
+    const pause = state.timerRunning ? 'Pause' : 'Resume';
+    let center = '', controls = '';
+
+    /* ---- REST PHASE ---------------------------------------- */
+    if (_phase === 'rest') {
+      center = `
+        <div class="rep-label">REP ${_rep} OF ${sess.reps} DONE</div>
+        <div class="phase-label" style="color:var(--blue);">REST</div>
+        <div class="big-num" style="color:var(--blue);">${fmtRest()}</div>
+        <div class="num-sub">Next rep starts automatically · or skip below</div>`;
+      controls = `
+        <div class="btn-row">
+          <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
+          <button class="btn btn--blue"    onclick="skipRest()">Skip Rest →</button>
+        </div>
+        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+
+    /* ---- DISTANCE PIECE (stopwatch) ----------------------- */
+    } else if (sess.type === 'distance') {
+      const numClass = sess.label.length > 7 ? 'big-num big-num--sm' : 'big-num';
+      center = `
+        <div class="target-wrap">
+          <div class="target-label">ROW TO</div>
+          <div class="target-val">${sess.label}</div>
+        </div>
+        <div class="phase-label" style="color:var(--orange);">ELAPSED</div>
+        <div class="${numClass}" style="color:var(--orange);">${fmtMs(elapsedMs())}</div>
+        <div class="num-sub">Watch Merach for distance · tap Done when you hit target</div>`;
+      controls = `
+        <div class="btn-row">
+          <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
+          <button class="btn btn--orange"  onclick="sessionDone()">Done ✓</button>
+        </div>
+        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+
+    /* ---- TIMED PIECE (countdown) -------------------------- */
+    } else if (sess.type === 'time') {
+      center = `
+        <div class="phase-label" style="color:var(--orange);">REMAINING</div>
+        <div class="big-num" style="color:var(--orange);">${fmtWorkRemaining()}</div>
+        <div class="num-sub">Watch Merach for split · keep steady effort</div>`;
+      controls = `
+        <div class="btn-row">
+          <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
+          <button class="btn btn--orange"  onclick="sessionDone()">Done Early</button>
+        </div>
+        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+
+    /* ---- INTERVAL DISTANCE (stopwatch per rep) ------------ */
+    } else if (sess.type === 'interval_d') {
+      const numClass = sess.workMeters >= 10000 ? 'big-num big-num--sm' : 'big-num';
+      center = `
+        <div class="rep-label">REP ${_rep} OF ${sess.reps}</div>
+        <div class="target-wrap" style="margin-bottom:8px;">
+          <div class="target-label">TARGET</div>
+          <div class="target-val">${sess.workMeters.toLocaleString()}m</div>
+        </div>
+        <div class="phase-label" style="color:var(--orange);">ELAPSED</div>
+        <div class="${numClass}" style="color:var(--orange);">${fmtMs(elapsedMs())}</div>
+        <div class="num-sub">Watch Merach for distance · rest after: ${fmtSec(sess.restSeconds)}</div>`;
+      controls = `
+        <div class="btn-row">
+          <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
+          <button class="btn btn--orange"  onclick="repDone()">Rep Done →</button>
+        </div>
+        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+
+    /* ---- INTERVAL TIMED (countdown per rep) --------------- */
+    } else if (sess.type === 'interval_t') {
+      center = `
+        <div class="rep-label">REP ${_rep} OF ${sess.reps}</div>
+        <div class="phase-label" style="color:var(--orange);">REMAINING</div>
+        <div class="big-num" style="color:var(--orange);">${fmtWorkRemaining()}</div>
+        <div class="num-sub">Watch Merach for split · rest after: ${fmtSec(sess.restSeconds)}</div>`;
+      controls = `
+        <div class="btn-row">
+          <button class="btn btn--surface" onclick="pauseToggle()">${pause}</button>
+          <button class="btn btn--orange"  onclick="repDone()">Done Early</button>
+        </div>
+        <button class="btn btn--ghost" onclick="abandonSession()">Abandon session</button>`;
+    }
+
+    return `
+      <div class="flex-between" style="margin-bottom:12px;">
+        <span class="hd" style="font-size:20px;color:var(--dim);">${DAY_META[state.selDay].label.toUpperCase()}</span>
+        <span class="mono" style="font-size:11px;color:var(--dimmer);">WEEK ${state.selWeek}</span>
+      </div>
+      <div style="padding:12px 0;">${center}</div>
+      <div style="margin-top:12px;">${controls}</div>`;
+  }
+
+  /* ── PACE INPUT ───────────────────────────────────────────── */
+  function screenPaceInput() {
+    const errMsg = state.paceError
+      ? `<p style="color:var(--red);font-size:13px;text-align:center;margin-bottom:8px;">${state.paceError}</p>`
+      : '';
+    return `
+      <div class="center" style="margin-bottom:28px;">
+        <div style="font-size:52px;margin-bottom:10px;">🏁</div>
+        <h2 class="hd" style="font-size:44px;color:var(--text);margin-bottom:6px;">SESSION DONE</h2>
+        <p style="color:var(--dim);font-size:14px;line-height:1.5;">Enter your average split now, before the Merach screen times out</p>
+      </div>
+      <p class="slabel" style="text-align:center;margin-bottom:8px;">AVERAGE SPLIT PER 500M</p>
+      <input class="pace-field${state.paceError?' err':''}" type="text" inputmode="decimal"
+        placeholder="2:05.0" id="paceField"
+        oninput="state.paceError=null;render();" />
+      <p class="pace-hint">M:SS or M:SS.t — read from Merach avg split display</p>
+      ${errMsg}
+      <button class="btn btn--orange" onclick="submitPace()">Save & Finish →</button>
+      <button class="btn btn--ghost"  onclick="submitPace(true)">Skip — don't record pace</button>`;
+  }
+
+  /* ── SESSION DONE ─────────────────────────────────────────── */
+  function screenSessionDone() {
+    const key   = `w${state.selWeek}-d${state.selDay}`;
+    const saved = state.sessions[key];
+    const coreDone = coresDone(state.selWeek);
+
+    const paceCard = saved?.pace ? `
+      <div class="card card--green">
+        ${pill('PACE RECORDED','green')}
+        <div class="hd" style="font-size:56px;color:var(--green);margin-top:8px;">${saved.pace}</div>
+        <p style="color:var(--dim);font-size:12px;font-family:var(--font-mono);margin-top:4px;">
+          per 500m · ${DAY_META[state.selDay].label} Week ${state.selWeek}
+        </p>
+      </div>` : '';
+
+    const weekCard = coreDone && state.selWeek === state.week && state.week < 24 ? `
+      <div class="card card--green">
+        ${pill('WEEK '+state.week+' CORE COMPLETE','green')}
+        <p style="color:var(--muted);font-size:14px;margin:10px 0 0;">
+          All 3 core sessions done. Advance from the home screen when ready.
+        </p>
+      </div>` : '';
+
+    return `
+      <div class="center" style="margin-bottom:28px;">
+        <div style="font-size:64px;margin-bottom:12px;">✅</div>
+        <h2 class="hd" style="font-size:52px;color:var(--text);margin-bottom:6px;">LOGGED</h2>
+      </div>
+      ${paceCard}${weekCard}
+      <button class="btn btn--orange" style="margin-top:8px;" onclick="goTo('home')">Back to Home</button>`;
+  }
+
+  /* ── HISTORY ──────────────────────────────────────────────── */
+  function screenHistory() {
+    // Pull and sort all completed sessions
+    const entries = Object.entries(state.sessions)
+      .filter(([,v]) => v?.completed)
+      .map(([key, v]) => {
+        const [wp, dp] = key.split('-');
+        return { week: parseInt(wp.slice(1)), dayIdx: parseInt(dp.slice(1)), ...v };
+      })
+      .sort((a, b) => a.week !== b.week ? a.week - b.week : a.dayIdx - b.dayIdx);
+
+    if (!entries.length) return `
+      <button class="back-btn" onclick="goTo('home')">← Back</button>
+      <h2 class="hd" style="font-size:44px;color:var(--text);margin-bottom:28px;">HISTORY</h2>
+      <div class="card center"><p style="color:var(--dim);font-size:14px;padding:20px 0;">No sessions logged yet.</p></div>`;
+
+    // Group by week, display most recent first
+    const byWeek = {};
+    entries.forEach(e => { if (!byWeek[e.week]) byWeek[e.week]=[]; byWeek[e.week].push(e); });
+
+    const weeks = Object.keys(byWeek).sort((a,b)=>b-a).map(w => `
+      <div class="card">
+        <p class="slabel">WEEK ${w}</p>
+        ${byWeek[w].map(e => `
+          <div class="hist-row">
+            <div>
+              <span class="hist-desc">${DAY_META[e.dayIdx].label}${DAY_META[e.dayIdx].optional?' (opt)':''}</span>
+              <br/><span style="color:var(--dimmer);font-size:12px;font-family:var(--font-mono);">${e.label||''}</span>
+            </div>
+            <span class="hist-pace">${e.pace||'—'}</span>
+          </div>`).join('')}
+      </div>`).join('');
+
+    return `
+      <button class="back-btn" onclick="goTo('home')">← Back</button>
+      <div class="flex-between" style="margin-bottom:20px;">
+        <h2 class="hd" style="font-size:44px;color:var(--text);">HISTORY</h2>
+        <span class="mono" style="font-size:11px;color:var(--dim);padding-top:8px;">PACE / 500M</span>
+      </div>
+      ${weeks}`;
+  }
+
+  /* ── SETTINGS ─────────────────────────────────────────────── */
+  function screenSettings() {
+    const resetBlock = state.resetConfirm ? `
+      <div class="card card--red">
+        <p style="color:var(--red);font-size:14px;margin-bottom:16px;line-height:1.5;">
+          This deletes all logged history and restarts at Week 1. Are you sure?
+        </p>
+        <button class="btn btn--red"   onclick="doReset()">Yes, reset everything</button>
+        <button class="btn btn--ghost" onclick="state.resetConfirm=false;render();">Cancel</button>
+      </div>` :
+      `<button class="btn btn--ghost" style="color:#3A3A3A;border-color:#222;" onclick="state.resetConfirm=true;render();">Reset all data</button>`;
+
+    return `
+      <button class="back-btn" onclick="goTo('home')">← Back</button>
+      <h2 class="hd" style="font-size:44px;color:var(--text);margin-bottom:28px;">SETTINGS</h2>
+
+      <div class="card">
+        <p class="slabel">CURRENT WEEK</p>
+        <div class="hd" style="font-size:56px;color:var(--text);margin:4px 0 16px;">${state.week} OF 24</div>
+        <div class="flex-row">
+          ${state.week>1  ? `<button class="btn btn--ghost"  style="flex:1;margin-bottom:0;" onclick="changeWeek(-1)">← Back</button>` : ''}
+          ${state.week<24 ? `<button class="btn btn--green"  style="flex:1;margin-bottom:0;" onclick="changeWeek(1)">Advance →</button>` : ''}
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="slabel" style="margin-bottom:10px;">HALF MODE</p>
+        <p style="color:var(--muted);font-size:13px;line-height:1.65;margin-bottom:14px;">
+          Halves all distances and durations. Interval rep counts are halved; piece distances stay the same.
+          Recommended for your first time through the plan.
+        </p>
+        <button class="btn ${state.halfMode?'btn--orange':'btn--ghost'}" style="margin-bottom:0;"
+          onclick="toggleHalfMode()">
+          ${state.halfMode ? '✓ Half Mode ON — tap to disable' : 'Half Mode OFF — tap to enable'}
+        </button>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <p class="slabel" style="margin-bottom:10px;">PACE FORMAT</p>
+        <p style="color:var(--muted);font-size:13px;line-height:1.65;margin:0;">
+          Enter pace as <span class="mono" style="color:var(--text);">M:SS.t</span> per 500m after each session.
+          Example: <span class="mono" style="color:var(--text);">2:05.3</span>.
+          Read the average split from the Merach display before the screen times out.
+          For interval sessions, use the overall average for the whole session.
+        </p>
+      </div>
+
+      ${resetBlock}`;
+  }
+
+
+  /* ============================================================
+     ACTION HANDLERS
+     These are called by onclick attributes in the rendered HTML.
+     Each one modifies state and calls render() (or goTo()).
+  ============================================================ */
+
+  function goTo(screen) {
+    state.screen = screen;
+    if (screen !== 'settings') state.resetConfirm = false;
+    render();
+  }
+
+  /* Tap a session tile on the home screen */
+  function selectSession(week, dayIdx) {
+    state.selWeek   = week;
+    state.selDay    = dayIdx;
+    state.activeSess= getSession(week, dayIdx);
+    state.paceError = null;
+    goTo('session-start');
+  }
+
+  /* Tap "Begin Session" */
+  function beginSession() {
+    const sess = state.activeSess;
+
+    // Reset all timer state
+    _phase = 'work';
+    _rep   = 1;
+    _restStartMs = null;
+    _restRemMs   = null;
+    _workRemMs   = null;
+    timerReset();
+
+    // For countdown sessions, set the initial work end time
+    if (sess.type === 'time')       _workEndMs = Date.now() + sess.seconds    * 1000;
+    else if (sess.type==='interval_t') _workEndMs = Date.now() + sess.workSeconds * 1000;
+    else                             _workEndMs = null; // stopwatch mode
+
+    timerStart();
+    requestWakeLock();
+    goTo('session-active');
+  }
+
+  /* Tap "Rep Done" (interval_d) or "Done Early" (interval_t) */
+  function repDone() {
+    _repComplete();
+  }
+
+  /* Tap "Skip Rest" during a rest period */
+  function skipRest() {
+    _startNextWork();
+  }
+
+  /* Toggle pause/resume */
+  function pauseToggle() {
+    state.timerRunning ? timerPause() : timerStart();
+  }
+
+  /* Tap "Done" on a single distance or time session */
+  function sessionDone() {
+    _phase = 'complete';
+    timerPause();
+    releaseWakeLock();
+    state.paceError = null;
+    goTo('pace-input');
+  }
+
+  /* Abandon mid-session and return home */
+  function abandonSession() {
+    _phase = 'idle';
+    timerPause();
+    timerReset();
+    releaseWakeLock();
+    goTo('home');
+  }
+
+  /* Submit pace from the pace-input screen.
+     skip=true records the session as complete but without a pace value. */
+  function submitPace(skip=false) {
+    const field = document.getElementById('paceField');
+    const val   = field ? field.value.trim() : '';
+
+    if (!skip && !validPace(val)) {
+      state.paceError = 'Use M:SS or M:SS.t — e.g. 2:05.3';
+      render();
+      // Re-focus after render so keyboard stays up
+      setTimeout(() => { const f=document.getElementById('paceField'); if(f) f.focus(); }, 50);
+      return;
+    }
+
+    const key = `w${state.selWeek}-d${state.selDay}`;
+    state.sessions[key] = {
+      completed: true,
+      pace:  skip ? null : val,
+      label: state.activeSess.label,    // stored for pace-history lookup
+      date:  new Date().toISOString().slice(0,10)
+    };
+    saveState();
+    goTo('session-done');
+  }
+
+  function changeWeek(delta) {
+    state.week = Math.max(1, Math.min(24, state.week + delta));
+    saveState();
+    render();
+  }
+
+  function toggleHalfMode() {
+    state.halfMode = !state.halfMode;
+    saveState();
+    render();
+  }
+
+  function doReset() {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      screen:'home', week:1, halfMode:false, sessions:{},
+      selWeek:null, selDay:null, activeSess:null,
+      timerRunning:false, paceError:null, resetConfirm:false
+    };
+    _phase='idle'; _rep=1;
+    _startMs=null; _baseMs=0;
+    _workEndMs=null; _workRemMs=null;
+    _restStartMs=null; _restRemMs=null;
+    timerPause();
+    releaseWakeLock();
+    render();
+  }
+
+
+  /* ============================================================
+     RENDER
+     
+     The single function that updates the visible page.
+     Sets #app.innerHTML to the output of the current screen's
+     renderer function, then scrolls to the top.
+     
+     Also adds/removes the .is-active class on #app so the active
+     session screen gets tighter top padding.
+  ============================================================ */
+
+  function render() {
+    const app = document.getElementById('app');
+
+    const screens = {
+      'home':           screenHome,
+      'session-start':  screenSessionStart,
+      'session-active': screenSessionActive,
+      'pace-input':     screenPaceInput,
+      'session-done':   screenSessionDone,
+      'history':        screenHistory,
+      'settings':       screenSettings
+    };
+
+    const fn = screens[state.screen];
+    app.innerHTML = fn ? fn() : `<p style="color:red;">Unknown screen: ${state.screen}</p>`;
+    app.className = state.screen === 'session-active' ? 'is-active' : '';
+
+    if (state.screen !== 'session-active') window.scrollTo(0, 0);
+  }
+
+
+  /* ============================================================
+     INIT
+     
+     Runs once when the page loads.
+     Loads persisted values from localStorage, then renders.
+     Timer state is always reset (can't persist across page loads).
+  ============================================================ */
+
+  (function init() {
+    const saved = loadState();
+    if (saved) {
+      state.week     = saved.week     || 1;
+      state.halfMode = saved.halfMode || false;
+      state.sessions = saved.sessions || {};
+    }
+    state.screen = 'home'; // always open on home, never mid-session
+    render();
+  })();
+
+  </script>
+</body>
+</html>
