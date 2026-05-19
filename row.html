@@ -766,13 +766,16 @@
       </div>`;
 
     // Session-specific guidance blurb
-    const guide = {
-      distance:   `Row <strong>${sess.label}</strong> continuously. Watch the distance counter on the Merach. This app runs a stopwatch. Your split (/500m avg) is on the Merach display.`,
-      time:       `Row for <strong>${sess.label}</strong>. This app counts down the time. Your split is on the Merach. Aim for an even effort throughout.`,
-      interval_d: `<strong>${sess.reps} × ${sess.workMeters.toLocaleString()}m</strong> with ${fmtSec(sess.restSeconds)} rest between reps. Watch the Merach for distance. This app times the rest and shows a stopwatch per rep. Tap Rep Done when you hit your distance.`,
-      interval_t: `<strong>${sess.reps} × ${sess.workSeconds/60}min</strong> with ${fmtSec(sess.restSeconds)} rest between reps. This app times both the work and rest periods automatically.`
-    }[sess.type];
-
+    let guide;
+    if (sess.type === 'distance') {
+      guide = `Row <strong>${sess.label}</strong> continuously. Watch the distance counter on the Merach. This app runs a stopwatch. Your split (/500m avg) is on the Merach display.`;
+    } else if (sess.type === 'time') {
+      guide = `Row for <strong>${sess.label}</strong>. This app counts down the time. Your split is on the Merach. Aim for an even effort throughout.`;
+    } else if (sess.type === 'interval_d') {
+      guide = `<strong>${sess.reps} × ${sess.workMeters.toLocaleString()}m</strong> with ${fmtSec(sess.restSeconds)} rest between reps. Watch the Merach for distance. This app times the rest and shows a stopwatch per rep. Tap Rep Done when you hit your distance.`;
+    } else if (sess.type === 'interval_t') {
+      guide = `<strong>${sess.reps} × ${sess.workSeconds/60}min</strong> with ${fmtSec(sess.restSeconds)} rest between reps. This app times both the work and rest periods automatically.`;
+    }
     const halfNote = state.halfMode
       ? `<div style="margin-bottom:12px;">${pill('HALF MODE','orange')} <span style="color:var(--orange);font-size:13px;margin-left:8px;">Session has been halved</span></div>`
       : '';
