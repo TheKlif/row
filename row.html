@@ -683,6 +683,7 @@
 
   /* ── HOME ─────────────────────────────────────────────────── */
   function screenHome() {
+    const ROW_HTML_UPDATED = new Date(document.lastModified).toLocaleString();
     const tiles = Array.from({length:5}, (_,di) => {
       const sess = getSession(state.week, di);
       const key  = `w${state.week}-d${di}`;
@@ -900,13 +901,13 @@
       </div>
       <p class="slabel" style="text-align:center;margin-bottom:8px;">AVERAGE SPLIT PER 500M</p>
       <input class="pace-field${state.paceError?' err':''}" type="text" inputmode="text"
-        placeholder="2:05.0" id="paceField" oninput="state.paceError=null;" 
-        onkeypress="if(event.key==='Enter'){submitPace()}" autocapitalize="off" 
-        autocomplete="off" spellcheck="false" onblur="render();" />
+        placeholder="2:05.0" id="paceField" id="paceField" oninput="state.paceError=null;" 
+        onkeydown="if(event.key==='Enter'){submitPace(false)}" autocapitalize="off" 
+        autocomplete="off" spellcheck="false" />
       <p class="pace-hint">M:SS or M:SS.t — read from Merach avg split display</p>
       ${errMsg}
-      <button class="btn btn--orange" onclick="submitPace(false)">Save & Finish →</button>
-      <button class="btn btn--ghost"  onclick="submitPace(true)">Skip — don't record pace</button>`;
+      <button class="btn btn--orange" type="button" onclick="submitPace(false)">Save & Finish →</button>
+      <button class="btn btn--ghost"  type="button" onclick="submitPace(true)">Skip — don't record pace</button>`;
   }
 
   /* ── SESSION DONE ─────────────────────────────────────────── */
@@ -1119,29 +1120,33 @@
 
   /* Submit pace from the pace-input screen.
      skip=true records the session as complete but without a pace value. */
-  function submitPace(skip=false) {
-    const field = document.getElementById('paceField');
-    const val   = field ? field.value.trim() : '';
+function submitPace(skip=false) {
+  const field = document.getElementById('paceField');
+  const val = field ? field.value.trim() : '';
 
-    if (!skip && !validPace(val)) {
-      state.paceError = 'Use M:SS or M:SS.t — e.g. 2:05.3';
-      render();
-      // Re-focus after render so keyboard stays up
-      setTimeout(() => { const f=document.getElementById('paceField'); if(f) f.focus(); }, 50);
-      return;
-    }
+  console.log('submitPace', { skip, val, activeSess: state.activeSess });
 
-    const key = `w${state.selWeek}-d${state.selDay}`;
-    state.sessions[key] = {
-      completed: true,
-      pace:  skip ? null : val,
-      label: state.activeSess.label,    // stored for pace-history lookup
-      date:  new Date().toISOString().slice(0,10)
-    };
-    saveState();
-    goTo('session-done');
+  if (!skip && !validPace(val)) {
+    state.paceError = 'Use MSS or MSS.t, e.g. 2:05.3';
+    render();
+    setTimeout(() => {
+      const f = document.getElementById('paceField');
+      if (f) f.focus();
+    }, 50);
+    return;
   }
 
+  const key = `w${state.selWeek}-d${state.selDay}`;
+  state.sessions[key] = {
+    completed: true,
+    pace: skip ? null : val,
+    label: state.activeSess.label,
+    date: new Date().toISOString().slice(0,10)
+  };
+
+  saveState();
+  goTo('session-done');
+}
   function changeWeek(delta) {
     state.week = Math.max(1, Math.min(24, state.week + delta));
     saveState();
@@ -1223,6 +1228,10 @@
   })();
 
   </script>
-13.48.30
 </body>
+<footer>
+  <div style="margin-top:24px;color:var(--dimmer);font-family:var(--font-mono);font-size:10px;text-align:center;">
+  row.html updated: ${ROW_HTML_UPDATED}
+</div>
+</footer>
 </html>
