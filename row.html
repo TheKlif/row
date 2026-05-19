@@ -683,7 +683,6 @@
 
   /* ── HOME ─────────────────────────────────────────────────── */
   function screenHome() {
-    const ROW_HTML_UPDATED = new Date(document.lastModified).toLocaleString();
     const tiles = Array.from({length:5}, (_,di) => {
       const sess = getSession(state.week, di);
       const key  = `w${state.week}-d${di}`;
@@ -1207,6 +1206,8 @@ function submitPace(skip=false) {
     if (state.screen !== 'session-active') window.scrollTo(0, 0);
   }
 
+  const ROW_HTML_UPDATED = new Date(document.lastModified).toLocaleString();
+
 
   /* ============================================================
      INIT
@@ -1230,8 +1231,8 @@ function submitPace(skip=false) {
   </script>
 </body>
 <footer>
-  <div style="margin-top:24px;color:var(--dimmer);font-family:var(--font-mono);font-size:10px;text-align:center;">
+  `<div style="margin-top:24px;color:var(--dimmer);font-family:var(--font-mono);font-size:10px;text-align:center;">
   row.html updated: ${ROW_HTML_UPDATED}
-</div>
+</div>`
 </footer>
 </html>
