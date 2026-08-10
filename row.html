@@ -648,6 +648,16 @@
     if (_wakeLock) { _wakeLock.release(); _wakeLock = null; }
   }
 
+  /* Wake Lock auto-releases on tab/screen backgrounding (browser default).
+     Re-request it when the page becomes visible again, but only if a
+     session is actually active and running — no point holding the
+     screen open on the home or history screens. */
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && state.screen === 'session-active' && state.timerRunning) {
+      requestWakeLock();
+    }
+  });
+
 
   /* ============================================================
      FORMATTING UTILITIES
@@ -710,8 +720,8 @@
         s.label   = `${s.meters.toLocaleString()}m`;
         break;
       case 'time':
-        s.seconds = s.seconds / 2;
-        s.label   = `${s.seconds / 60}min`;
+        s.seconds = Math.round(s.seconds / 2);
+        s.label   = fmtSec(s.seconds);
         break;
       case 'interval_d':
         s.reps  = Math.max(1, Math.floor(s.reps / 2));
@@ -775,7 +785,6 @@
       const saved = state.sessions[key];
       const done  = !!saved?.completed;
       const meta  = DAY_META[di];
-      const bigNum = sess.label.length > 8 ? 'tile-name' : 'tile-name'; // future hook
 
       return `
         <button class="tile${done?' done':''}${meta.optional?' opt':''}"
@@ -1212,7 +1221,6 @@
 
   /* Toggle pause/resume */
   function pauseToggle() {
-    console.log('pauseToggle');
     if (state.timerRunning) {
       timerPause();
     } else {
